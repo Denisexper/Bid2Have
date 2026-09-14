@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bid2have-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bid2have
+      POSTGRES_PASSWORD: bid2have
+      POSTGRES_DB: bid2have
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
