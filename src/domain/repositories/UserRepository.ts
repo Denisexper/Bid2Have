@@ -8,6 +8,7 @@ export interface CreateUserInput {
 }
 
 export interface UserRepository {
+  findById(id: string): Promise<User | null>;
   findByGoogleId(googleId: string): Promise<User | null>;
   create(input: CreateUserInput): Promise<User>;
 }

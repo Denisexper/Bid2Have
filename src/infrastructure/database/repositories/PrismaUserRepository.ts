@@ -5,6 +5,10 @@ import { CreateUserInput, UserRepository } from '../../../domain/repositories/Us
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async findById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
   async findByGoogleId(googleId: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { googleId } });
   }
