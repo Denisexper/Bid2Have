@@ -1,0 +1,241 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  SUPERADMIN
+}
+
+enum ListingCondition {
+  NEW
+  USED
+}
+
+enum SaleMode {
+  FREE_OFFER
+  AUCTION
+}
+
+enum ListingStatus {
+  ACTIVE
+  RESERVED
+  SOLD
+  CANCELLED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+}
+
+enum ReportTargetType {
+  LISTING
+  USER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum NotificationType {
+  NEW_OFFER
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  OFFER_COUNTERED
+  NEW_MESSAGE
+  FOLLOWED_SELLER_NEW_LISTING
+}
+
+model User {
+  id        String   @id @default(uuid())
+  googleId  String   @unique
+  name      String
+  email     String   @unique
+  avatarUrl String?
+  role      UserRole @default(USER)
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listings           Listing[]
+  offers             Offer[]
+  chatsAsBuyer       Chat[]         @relation("ChatBuyer")
+  chatsAsSeller      Chat[]         @relation("ChatSeller")
+  messages           Message[]
+  ratingsGiven       Rating[]       @relation("RatingRater")
+  ratingsReceived    Rating[]       @relation("RatingRated")
+  reportsFiled       Report[]       @relation("ReportReporter")
+  reportsReceived    Report[]       @relation("ReportTargetUser")
+  notifications      Notification[]
+  following          Follow[]       @relation("Follower")
+  followers          Follow[]       @relation("Following")
+
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listings Listing[]
+
+  @@map("categories")
+}
+
+model Listing {
+  id            String            @id @default(uuid())
+  sellerId      String
+  seller        User              @relation(fields: [sellerId], references: [id])
+  title         String
+  description   String
+  categoryId    String
+  category      Category          @relation(fields: [categoryId], references: [id])
+  condition     ListingCondition
+  price         Decimal           @db.Decimal(10, 2)
+  currency      String            @default("USD")
+  photos        String[]
+  lat           Float
+  lng           Float
+  saleMode      SaleMode
+  auctionEndAt  DateTime?
+  status        ListingStatus     @default(ACTIVE)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  offers   Offer[]
+  chats    Chat[]
+  reports  Report[]
+
+  @@index([categoryId])
+  @@index([sellerId])
+  @@index([status])
+  @@map("listings")
+}
+
+model Offer {
+  id            String      @id @default(uuid())
+  listingId     String
+  listing       Listing     @relation(fields: [listingId], references: [id])
+  buyerId       String
+  buyer         User        @relation(fields: [buyerId], references: [id])
+  amount        Decimal     @db.Decimal(10, 2)
+  status        OfferStatus @default(PENDING)
+  parentOfferId String?
+  parentOffer   Offer?      @relation("OfferCounter", fields: [parentOfferId], references: [id])
+  counterOffers Offer[]     @relation("OfferCounter")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  chat   Chat?
+  ratings Rating[]
+
+  @@index([listingId])
+  @@index([buyerId])
+  @@map("offers")
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  offerId   String   @unique
+  offer     Offer    @relation(fields: [offerId], references: [id])
+  buyerId   String
+  buyer     User     @relation("ChatBuyer", fields: [buyerId], references: [id])
+  sellerId  String
+  seller    User     @relation("ChatSeller", fields: [sellerId], references: [id])
+  createdAt DateTime @default(now())
+
+  messages Message[]
+
+  @@map("chats")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([chatId])
+  @@map("messages")
+}
+
+model Rating {
+  id           String   @id @default(uuid())
+  offerId      String
+  offer        Offer    @relation(fields: [offerId], references: [id])
+  raterId      String
+  rater        User     @relation("RatingRater", fields: [raterId], references: [id])
+  ratedUserId  String
+  ratedUser    User     @relation("RatingRated", fields: [ratedUserId], references: [id])
+  score        Int
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  @@index([ratedUserId])
+  @@map("ratings")
+}
+
+model Report {
+  id          String           @id @default(uuid())
+  reporterId  String
+  reporter    User             @relation("ReportReporter", fields: [reporterId], references: [id])
+  targetType   ReportTargetType
+  listingId    String?
+  listing      Listing?         @relation(fields: [listingId], references: [id])
+  targetUserId String?
+  targetUser   User?            @relation("ReportTargetUser", fields: [targetUserId], references: [id])
+  reason      String
+  description String?
+  status      ReportStatus     @default(PENDING)
+  createdAt   DateTime         @default(now())
+
+  @@index([status])
+  @@map("reports")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  payload   Json?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  followingId String
+  following   User     @relation("Following", fields: [followingId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
