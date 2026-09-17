@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { InvalidGoogleTokenError } from '../../../domain/errors/InvalidGoogleTokenError';
+import { InvalidGoogleTokenError } from '../../../domain/errors/auth/InvalidGoogleTokenError';
 import { AuthenticateWithGoogleUseCase } from '../../../application/use-cases/AuthenticateWithGoogleUseCase';
 import { signJwt } from '../../../shared/utils/jwt';
 
