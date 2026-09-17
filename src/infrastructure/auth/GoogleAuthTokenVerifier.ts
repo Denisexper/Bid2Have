@@ -1,5 +1,5 @@
 import { OAuth2Client } from 'google-auth-library';
-import { InvalidGoogleTokenError } from '../../domain/errors/InvalidGoogleTokenError';
+import { InvalidGoogleTokenError } from '../../domain/errors/auth/InvalidGoogleTokenError';
 import { GoogleTokenPayload, GoogleTokenVerifier } from '../../domain/repositories/GoogleTokenVerifier';
 
 export class GoogleAuthTokenVerifier implements GoogleTokenVerifier {
