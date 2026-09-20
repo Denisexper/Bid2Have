@@ -8,6 +8,7 @@ import { UpdateCategoryUseCase } from '../../../application/use-cases/category/U
 import { DeleteCategoryUseCase } from '../../../application/use-cases/category/DeleteCategoryUseCase';
 import { CategoryController } from '../controllers/category/CategoryController';
 import { authenticate } from '../middlewares/authMiddleware';
+import { requireRole } from '../middlewares/roleMiddleware';
 
 const categoryRepository = new PrismaCategoryRepository(prisma);
 const createCategoryUseCase = new CreateCategoryUseCase(categoryRepository);
@@ -28,6 +29,6 @@ export const categoryRoutes = Router();
 
 categoryRoutes.get('/', categoryController.list);
 categoryRoutes.get('/:id', categoryController.getById);
-categoryRoutes.post('/', authenticate, categoryController.create);
-categoryRoutes.patch('/:id', authenticate, categoryController.update);
-categoryRoutes.delete('/:id', authenticate, categoryController.delete);
+categoryRoutes.post('/', authenticate, requireRole('SUPERADMIN'), categoryController.create);
+categoryRoutes.patch('/:id', authenticate, requireRole('SUPERADMIN'), categoryController.update);
+categoryRoutes.delete('/:id', authenticate, requireRole('SUPERADMIN'), categoryController.delete);
