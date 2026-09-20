@@ -2,7 +2,7 @@ import { ListingRepository } from '../../../domain/repositories/ListingRepositor
 import { ListingNotFoundError } from '../../../domain/errors/listing/ListingNotFoundError';
 import { ForbiddenListingActionError } from '../../../domain/errors/listing/ForbiddenListingActionError';
 import { UserRole } from '../../../generated/prisma/enums';
-import { ActingUser } from './ActingUser';
+import { ActingUser } from '../../shared/ActingUser';
 
 export class DeleteListingUseCase {
   constructor(private readonly listingRepository: ListingRepository) {}

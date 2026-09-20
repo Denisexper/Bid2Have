@@ -5,7 +5,7 @@ import { ListingNotFoundError } from '../../../domain/errors/listing/ListingNotF
 import { ForbiddenListingActionError } from '../../../domain/errors/listing/ForbiddenListingActionError';
 import { CategoryNotFoundError } from '../../../domain/errors/category/CategoryNotFoundError';
 import { UserRole } from '../../../generated/prisma/enums';
-import { ActingUser } from './ActingUser';
+import { ActingUser } from '../../shared/ActingUser';
 
 export class UpdateListingUseCase {
   constructor(
