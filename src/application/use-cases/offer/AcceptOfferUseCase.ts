@@ -1,6 +1,7 @@
 import { Offer } from '../../../domain/entities/Offer';
 import { OfferRepository } from '../../../domain/repositories/OfferRepository';
 import { ListingRepository } from '../../../domain/repositories/ListingRepository';
+import { ChatRepository } from '../../../domain/repositories/ChatRepository';
 import { OfferNotFoundError } from '../../../domain/errors/offer/OfferNotFoundError';
 import { ForbiddenOfferActionError } from '../../../domain/errors/offer/ForbiddenOfferActionError';
 import { InvalidOfferStateError } from '../../../domain/errors/offer/InvalidOfferStateError';
@@ -11,6 +12,7 @@ export class AcceptOfferUseCase {
   constructor(
     private readonly offerRepository: OfferRepository,
     private readonly listingRepository: ListingRepository,
+    private readonly chatRepository: ChatRepository,
   ) {}
 
   async execute(id: string, actingUser: ActingUser): Promise<Offer> {
@@ -39,6 +41,13 @@ export class AcceptOfferUseCase {
 
     await this.offerRepository.rejectPendingExcept(offer.listingId, id);
     await this.listingRepository.updateById(offer.listingId, { status: ListingStatus.RESERVED });
+
+    await this.chatRepository.create({
+      listingId: offer.listingId,
+      offerId: accepted.id,
+      buyerId: accepted.buyerId,
+      sellerId: listing.sellerId,
+    });
 
     return accepted;
   }
