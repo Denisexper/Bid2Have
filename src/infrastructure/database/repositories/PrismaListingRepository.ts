@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../../generated/prisma/client';
+import { ListingStatus, SaleMode } from '../../../generated/prisma/enums';
 import { Listing } from '../../../domain/entities/Listing';
 import {
   CreateListingInput,
@@ -49,5 +50,16 @@ export class PrismaListingRepository implements ListingRepository {
     }
     const deleted = await this.prisma.listing.delete({ where: { id } });
     return toDomain(deleted);
+  }
+
+  async findExpiredActiveAuctions(now: Date): Promise<Listing[]> {
+    const listings = await this.prisma.listing.findMany({
+      where: {
+        saleMode: SaleMode.AUCTION,
+        status: ListingStatus.ACTIVE,
+        auctionEndAt: { lte: now },
+      },
+    });
+    return listings.map(toDomain);
   }
 }

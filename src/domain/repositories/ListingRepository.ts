@@ -37,4 +37,5 @@ export interface ListingRepository {
   findById(id: string): Promise<Listing | null>;
   updateById(id: string, input: UpdateListingInput): Promise<Listing | null>;
   delete(id: string): Promise<Listing | null>;
+  findExpiredActiveAuctions(now: Date): Promise<Listing[]>;
 }

@@ -38,6 +38,14 @@ export class PrismaOfferRepository implements OfferRepository {
     return result._max.amount ? result._max.amount.toNumber() : null;
   }
 
+  async findHighestPendingOfferByListingId(listingId: string): Promise<Offer | null> {
+    const offer = await this.prisma.offer.findFirst({
+      where: { listingId, status: OfferStatus.PENDING },
+      orderBy: { amount: 'desc' },
+    });
+    return offer ? toDomain(offer) : null;
+  }
+
   async updateStatus(id: string, status: OfferStatus): Promise<Offer | null> {
     const existing = await this.prisma.offer.findUnique({ where: { id } });
     if (!existing) {

@@ -10,9 +10,13 @@ import { prisma } from './infrastructure/database/prisma-client';
 import { PrismaUserRepository } from './infrastructure/database/repositories/PrismaUserRepository';
 import { PrismaChatRepository } from './infrastructure/database/repositories/PrismaChatRepository';
 import { PrismaMessageRepository } from './infrastructure/database/repositories/PrismaMessageRepository';
+import { PrismaListingRepository } from './infrastructure/database/repositories/PrismaListingRepository';
+import { PrismaOfferRepository } from './infrastructure/database/repositories/PrismaOfferRepository';
 import { GetChatByIdUseCase } from './application/use-cases/chat/GetChatByIdUseCase';
 import { SendMessageUseCase } from './application/use-cases/message/SendMessageUseCase';
+import { CloseExpiredAuctionsUseCase } from './application/use-cases/listing/CloseExpiredAuctionsUseCase';
 import { createSocketServer } from './infrastructure/realtime/socket';
+import { scheduleAuctionCloseJob } from './infrastructure/scheduler/auctionCloseJob';
 
 const app = express();
 
@@ -34,10 +38,18 @@ const httpServer = http.createServer(app);
 const userRepository = new PrismaUserRepository(prisma);
 const chatRepository = new PrismaChatRepository(prisma);
 const messageRepository = new PrismaMessageRepository(prisma);
+const listingRepository = new PrismaListingRepository(prisma);
+const offerRepository = new PrismaOfferRepository(prisma);
 const getChatByIdUseCase = new GetChatByIdUseCase(chatRepository);
 const sendMessageUseCase = new SendMessageUseCase(chatRepository, messageRepository);
+const closeExpiredAuctionsUseCase = new CloseExpiredAuctionsUseCase(
+  listingRepository,
+  offerRepository,
+  chatRepository,
+);
 
 createSocketServer(httpServer, userRepository, getChatByIdUseCase, sendMessageUseCase);
+scheduleAuctionCloseJob(closeExpiredAuctionsUseCase);
 
 httpServer.listen(env.port, () => {
     console.log(`Server is running on port ${env.port}`);
