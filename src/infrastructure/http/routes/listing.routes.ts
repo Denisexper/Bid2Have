@@ -4,6 +4,7 @@ import { PrismaListingRepository } from '../../database/repositories/PrismaListi
 import { PrismaCategoryRepository } from '../../database/repositories/PrismaCategoryRepository';
 import { CreateListingUseCase } from '../../../application/use-cases/listing/CreateListingUseCase';
 import { ListListingsUseCase } from '../../../application/use-cases/listing/ListListingsUseCase';
+import { SearchListingsNearbyUseCase } from '../../../application/use-cases/listing/SearchListingsNearbyUseCase';
 import { GetListingByIdUseCase } from '../../../application/use-cases/listing/GetListingByIdUseCase';
 import { UpdateListingUseCase } from '../../../application/use-cases/listing/UpdateListingUseCase';
 import { DeleteListingUseCase } from '../../../application/use-cases/listing/DeleteListingUseCase';
@@ -14,6 +15,7 @@ const listingRepository = new PrismaListingRepository(prisma);
 const categoryRepository = new PrismaCategoryRepository(prisma);
 const createListingUseCase = new CreateListingUseCase(listingRepository, categoryRepository);
 const listListingsUseCase = new ListListingsUseCase(listingRepository);
+const searchListingsNearbyUseCase = new SearchListingsNearbyUseCase(listingRepository);
 const getListingByIdUseCase = new GetListingByIdUseCase(listingRepository);
 const updateListingUseCase = new UpdateListingUseCase(listingRepository, categoryRepository);
 const deleteListingUseCase = new DeleteListingUseCase(listingRepository);
@@ -21,6 +23,7 @@ const deleteListingUseCase = new DeleteListingUseCase(listingRepository);
 const listingController = new ListingController(
   createListingUseCase,
   listListingsUseCase,
+  searchListingsNearbyUseCase,
   getListingByIdUseCase,
   updateListingUseCase,
   deleteListingUseCase,

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CreateListingUseCase } from '../../../../application/use-cases/listing/CreateListingUseCase';
 import { ListListingsUseCase } from '../../../../application/use-cases/listing/ListListingsUseCase';
+import { SearchListingsNearbyUseCase } from '../../../../application/use-cases/listing/SearchListingsNearbyUseCase';
 import { GetListingByIdUseCase } from '../../../../application/use-cases/listing/GetListingByIdUseCase';
 import { UpdateListingUseCase } from '../../../../application/use-cases/listing/UpdateListingUseCase';
 import { DeleteListingUseCase } from '../../../../application/use-cases/listing/DeleteListingUseCase';
@@ -13,6 +14,7 @@ export class ListingController {
   constructor(
     private readonly createListingUseCase: CreateListingUseCase,
     private readonly listListingsUseCase: ListListingsUseCase,
+    private readonly searchListingsNearbyUseCase: SearchListingsNearbyUseCase,
     private readonly getListingByIdUseCase: GetListingByIdUseCase,
     private readonly updateListingUseCase: UpdateListingUseCase,
     private readonly deleteListingUseCase: DeleteListingUseCase,
@@ -69,8 +71,37 @@ export class ListingController {
     }
   };
 
-  list = async (_req: Request, res: Response): Promise<void> => {
-    const listings = await this.listListingsUseCase.execute();
+  list = async (req: Request, res: Response): Promise<void> => {
+    const { lat, lng, radiusKm } = req.query;
+
+    if (lat === undefined && lng === undefined) {
+      const listings = await this.listListingsUseCase.execute();
+      res.status(200).json({ listings });
+      return;
+    }
+
+    const parsedLat = Number(lat);
+    const parsedLng = Number(lng);
+
+    if (Number.isNaN(parsedLat) || Number.isNaN(parsedLng)) {
+      res.status(400).json({ message: 'lat and lng must both be valid numbers' });
+      return;
+    }
+
+    let parsedRadiusKm: number | undefined;
+    if (radiusKm !== undefined) {
+      parsedRadiusKm = Number(radiusKm);
+      if (Number.isNaN(parsedRadiusKm)) {
+        res.status(400).json({ message: 'radiusKm must be a valid number' });
+        return;
+      }
+    }
+
+    const listings = await this.searchListingsNearbyUseCase.execute({
+      lat: parsedLat,
+      lng: parsedLng,
+      radiusKm: parsedRadiusKm,
+    });
     res.status(200).json({ listings });
   };
 
