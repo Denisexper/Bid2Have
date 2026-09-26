@@ -6,6 +6,7 @@ import { categoryRoutes } from './infrastructure/http/routes/category.routes';
 import { listingRoutes } from './infrastructure/http/routes/listing.routes';
 import { listingOfferRoutes, offerRoutes } from './infrastructure/http/routes/offer.routes';
 import { chatRoutes } from './infrastructure/http/routes/chat.routes';
+import { offerRatingRoutes, userRatingRoutes } from './infrastructure/http/routes/rating.routes';
 import { prisma } from './infrastructure/database/prisma-client';
 import { PrismaUserRepository } from './infrastructure/database/repositories/PrismaUserRepository';
 import { PrismaChatRepository } from './infrastructure/database/repositories/PrismaChatRepository';
@@ -31,6 +32,8 @@ app.use('/categories', categoryRoutes);
 app.use('/listings', listingRoutes);
 app.use('/listings', listingOfferRoutes);
 app.use('/offers', offerRoutes);
+app.use('/offers', offerRatingRoutes);
+app.use('/users', userRatingRoutes);
 app.use('/chats', chatRoutes);
 
 const httpServer = http.createServer(app);
