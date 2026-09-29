@@ -8,6 +8,7 @@ import { listingOfferRoutes, offerRoutes } from './infrastructure/http/routes/of
 import { chatRoutes } from './infrastructure/http/routes/chat.routes';
 import { offerRatingRoutes, userRatingRoutes } from './infrastructure/http/routes/rating.routes';
 import { reportRoutes } from './infrastructure/http/routes/report.routes';
+import { notificationRoutes } from './infrastructure/http/routes/notification.routes';
 import { prisma } from './infrastructure/database/prisma-client';
 import { PrismaUserRepository } from './infrastructure/database/repositories/PrismaUserRepository';
 import { PrismaChatRepository } from './infrastructure/database/repositories/PrismaChatRepository';
@@ -37,6 +38,7 @@ app.use('/offers', offerRatingRoutes);
 app.use('/users', userRatingRoutes);
 app.use('/chats', chatRoutes);
 app.use('/reports', reportRoutes);
+app.use('/notifications', notificationRoutes);
 
 const httpServer = http.createServer(app);
 
