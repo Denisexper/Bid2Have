@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { prisma } from '../../database/prisma-client';
 import { PrismaListingRepository } from '../../database/repositories/PrismaListingRepository';
 import { PrismaCategoryRepository } from '../../database/repositories/PrismaCategoryRepository';
+import { PrismaFollowRepository } from '../../database/repositories/PrismaFollowRepository';
+import { PrismaNotificationRepository } from '../../database/repositories/PrismaNotificationRepository';
 import { CreateListingUseCase } from '../../../application/use-cases/listing/CreateListingUseCase';
 import { ListListingsUseCase } from '../../../application/use-cases/listing/ListListingsUseCase';
 import { SearchListingsNearbyUseCase } from '../../../application/use-cases/listing/SearchListingsNearbyUseCase';
@@ -13,7 +15,14 @@ import { authenticate } from '../middlewares/authMiddleware';
 
 const listingRepository = new PrismaListingRepository(prisma);
 const categoryRepository = new PrismaCategoryRepository(prisma);
-const createListingUseCase = new CreateListingUseCase(listingRepository, categoryRepository);
+const followRepository = new PrismaFollowRepository(prisma);
+const notificationRepository = new PrismaNotificationRepository(prisma);
+const createListingUseCase = new CreateListingUseCase(
+  listingRepository,
+  categoryRepository,
+  followRepository,
+  notificationRepository,
+);
 const listListingsUseCase = new ListListingsUseCase(listingRepository);
 const searchListingsNearbyUseCase = new SearchListingsNearbyUseCase(listingRepository);
 const getListingByIdUseCase = new GetListingByIdUseCase(listingRepository);
