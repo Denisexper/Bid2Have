@@ -55,10 +55,20 @@ export class PrismaOfferRepository implements OfferRepository {
     return toDomain(updated);
   }
 
-  async rejectPendingExcept(listingId: string, exceptOfferId: string): Promise<void> {
-    await this.prisma.offer.updateMany({
+  async rejectPendingExcept(listingId: string, exceptOfferId: string): Promise<Offer[]> {
+    const pending = await this.prisma.offer.findMany({
       where: { listingId, status: OfferStatus.PENDING, id: { not: exceptOfferId } },
+    });
+
+    if (pending.length === 0) {
+      return [];
+    }
+
+    await this.prisma.offer.updateMany({
+      where: { id: { in: pending.map((offer) => offer.id) } },
       data: { status: OfferStatus.REJECTED },
     });
+
+    return pending.map((offer) => toDomain({ ...offer, status: OfferStatus.REJECTED }));
   }
 }

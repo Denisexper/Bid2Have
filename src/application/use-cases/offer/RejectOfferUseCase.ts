@@ -1,16 +1,18 @@
 import { Offer } from '../../../domain/entities/Offer';
 import { OfferRepository } from '../../../domain/repositories/OfferRepository';
 import { ListingRepository } from '../../../domain/repositories/ListingRepository';
+import { NotificationRepository } from '../../../domain/repositories/NotificationRepository';
 import { OfferNotFoundError } from '../../../domain/errors/offer/OfferNotFoundError';
 import { ForbiddenOfferActionError } from '../../../domain/errors/offer/ForbiddenOfferActionError';
 import { InvalidOfferStateError } from '../../../domain/errors/offer/InvalidOfferStateError';
 import { ActingUser } from '../../shared/ActingUser';
-import { OfferStatus, UserRole } from '../../../generated/prisma/enums';
+import { NotificationType, OfferStatus, UserRole } from '../../../generated/prisma/enums';
 
 export class RejectOfferUseCase {
   constructor(
     private readonly offerRepository: OfferRepository,
     private readonly listingRepository: ListingRepository,
+    private readonly notificationRepository: NotificationRepository,
   ) {}
 
   async execute(id: string, actingUser: ActingUser): Promise<Offer> {
@@ -36,6 +38,12 @@ export class RejectOfferUseCase {
     if (!rejected) {
       throw new OfferNotFoundError(id);
     }
+
+    await this.notificationRepository.create({
+      userId: rejected.buyerId,
+      type: NotificationType.OFFER_REJECTED,
+      payload: { listingId: rejected.listingId, offerId: rejected.id, amount: rejected.amount },
+    });
 
     return rejected;
   }

@@ -15,6 +15,7 @@ import { PrismaChatRepository } from './infrastructure/database/repositories/Pri
 import { PrismaMessageRepository } from './infrastructure/database/repositories/PrismaMessageRepository';
 import { PrismaListingRepository } from './infrastructure/database/repositories/PrismaListingRepository';
 import { PrismaOfferRepository } from './infrastructure/database/repositories/PrismaOfferRepository';
+import { PrismaNotificationRepository } from './infrastructure/database/repositories/PrismaNotificationRepository';
 import { GetChatByIdUseCase } from './application/use-cases/chat/GetChatByIdUseCase';
 import { SendMessageUseCase } from './application/use-cases/message/SendMessageUseCase';
 import { CloseExpiredAuctionsUseCase } from './application/use-cases/listing/CloseExpiredAuctionsUseCase';
@@ -47,8 +48,9 @@ const chatRepository = new PrismaChatRepository(prisma);
 const messageRepository = new PrismaMessageRepository(prisma);
 const listingRepository = new PrismaListingRepository(prisma);
 const offerRepository = new PrismaOfferRepository(prisma);
+const notificationRepository = new PrismaNotificationRepository(prisma);
 const getChatByIdUseCase = new GetChatByIdUseCase(chatRepository);
-const sendMessageUseCase = new SendMessageUseCase(chatRepository, messageRepository);
+const sendMessageUseCase = new SendMessageUseCase(chatRepository, messageRepository, notificationRepository);
 const closeExpiredAuctionsUseCase = new CloseExpiredAuctionsUseCase(
   listingRepository,
   offerRepository,

@@ -2,17 +2,19 @@ import { Offer } from '../../../domain/entities/Offer';
 import { OfferRepository } from '../../../domain/repositories/OfferRepository';
 import { ListingRepository } from '../../../domain/repositories/ListingRepository';
 import { ChatRepository } from '../../../domain/repositories/ChatRepository';
+import { NotificationRepository } from '../../../domain/repositories/NotificationRepository';
 import { OfferNotFoundError } from '../../../domain/errors/offer/OfferNotFoundError';
 import { ForbiddenOfferActionError } from '../../../domain/errors/offer/ForbiddenOfferActionError';
 import { InvalidOfferStateError } from '../../../domain/errors/offer/InvalidOfferStateError';
 import { ActingUser } from '../../shared/ActingUser';
-import { ListingStatus, OfferStatus, UserRole } from '../../../generated/prisma/enums';
+import { ListingStatus, NotificationType, OfferStatus, UserRole } from '../../../generated/prisma/enums';
 
 export class AcceptOfferUseCase {
   constructor(
     private readonly offerRepository: OfferRepository,
     private readonly listingRepository: ListingRepository,
     private readonly chatRepository: ChatRepository,
+    private readonly notificationRepository: NotificationRepository,
   ) {}
 
   async execute(id: string, actingUser: ActingUser): Promise<Offer> {
@@ -39,7 +41,7 @@ export class AcceptOfferUseCase {
       throw new OfferNotFoundError(id);
     }
 
-    await this.offerRepository.rejectPendingExcept(offer.listingId, id);
+    const autoRejected = await this.offerRepository.rejectPendingExcept(offer.listingId, id);
     await this.listingRepository.updateById(offer.listingId, { status: ListingStatus.RESERVED });
 
     await this.chatRepository.create({
@@ -48,6 +50,22 @@ export class AcceptOfferUseCase {
       buyerId: accepted.buyerId,
       sellerId: listing.sellerId,
     });
+
+    await this.notificationRepository.create({
+      userId: accepted.buyerId,
+      type: NotificationType.OFFER_ACCEPTED,
+      payload: { listingId: accepted.listingId, offerId: accepted.id, amount: accepted.amount },
+    });
+
+    await Promise.all(
+      autoRejected.map((rejected) =>
+        this.notificationRepository.create({
+          userId: rejected.buyerId,
+          type: NotificationType.OFFER_REJECTED,
+          payload: { listingId: rejected.listingId, offerId: rejected.id, amount: rejected.amount },
+        }),
+      ),
+    );
 
     return accepted;
   }

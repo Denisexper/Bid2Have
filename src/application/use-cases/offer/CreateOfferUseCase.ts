@@ -1,11 +1,12 @@
 import { Offer } from '../../../domain/entities/Offer';
 import { OfferRepository } from '../../../domain/repositories/OfferRepository';
 import { ListingRepository } from '../../../domain/repositories/ListingRepository';
+import { NotificationRepository } from '../../../domain/repositories/NotificationRepository';
 import { ListingNotFoundError } from '../../../domain/errors/listing/ListingNotFoundError';
 import { CannotOfferOnOwnListingError } from '../../../domain/errors/offer/CannotOfferOnOwnListingError';
 import { ListingNotAvailableError } from '../../../domain/errors/offer/ListingNotAvailableError';
 import { InvalidOfferAmountError } from '../../../domain/errors/offer/InvalidOfferAmountError';
-import { ListingStatus, SaleMode } from '../../../generated/prisma/enums';
+import { ListingStatus, NotificationType, SaleMode } from '../../../generated/prisma/enums';
 
 export interface CreateOfferRequest {
   listingId: string;
@@ -17,6 +18,7 @@ export class CreateOfferUseCase {
   constructor(
     private readonly offerRepository: OfferRepository,
     private readonly listingRepository: ListingRepository,
+    private readonly notificationRepository: NotificationRepository,
   ) {}
 
   async execute(request: CreateOfferRequest): Promise<Offer> {
@@ -49,10 +51,18 @@ export class CreateOfferUseCase {
       }
     }
 
-    return this.offerRepository.create({
+    const offer = await this.offerRepository.create({
       listingId: request.listingId,
       buyerId: request.buyerId,
       amount: request.amount,
     });
+
+    await this.notificationRepository.create({
+      userId: listing.sellerId,
+      type: NotificationType.NEW_OFFER,
+      payload: { listingId: offer.listingId, offerId: offer.id, buyerId: offer.buyerId, amount: offer.amount },
+    });
+
+    return offer;
   }
 }

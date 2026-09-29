@@ -3,6 +3,7 @@ import { prisma } from '../../database/prisma-client';
 import { PrismaOfferRepository } from '../../database/repositories/PrismaOfferRepository';
 import { PrismaListingRepository } from '../../database/repositories/PrismaListingRepository';
 import { PrismaChatRepository } from '../../database/repositories/PrismaChatRepository';
+import { PrismaNotificationRepository } from '../../database/repositories/PrismaNotificationRepository';
 import { CreateOfferUseCase } from '../../../application/use-cases/offer/CreateOfferUseCase';
 import { ListOffersForListingUseCase } from '../../../application/use-cases/offer/ListOffersForListingUseCase';
 import { GetOfferByIdUseCase } from '../../../application/use-cases/offer/GetOfferByIdUseCase';
@@ -15,12 +16,18 @@ import { authenticate } from '../middlewares/authMiddleware';
 const offerRepository = new PrismaOfferRepository(prisma);
 const listingRepository = new PrismaListingRepository(prisma);
 const chatRepository = new PrismaChatRepository(prisma);
-const createOfferUseCase = new CreateOfferUseCase(offerRepository, listingRepository);
+const notificationRepository = new PrismaNotificationRepository(prisma);
+const createOfferUseCase = new CreateOfferUseCase(offerRepository, listingRepository, notificationRepository);
 const listOffersForListingUseCase = new ListOffersForListingUseCase(offerRepository, listingRepository);
 const getOfferByIdUseCase = new GetOfferByIdUseCase(offerRepository, listingRepository);
-const acceptOfferUseCase = new AcceptOfferUseCase(offerRepository, listingRepository, chatRepository);
-const rejectOfferUseCase = new RejectOfferUseCase(offerRepository, listingRepository);
-const counterOfferUseCase = new CounterOfferUseCase(offerRepository, listingRepository);
+const acceptOfferUseCase = new AcceptOfferUseCase(
+  offerRepository,
+  listingRepository,
+  chatRepository,
+  notificationRepository,
+);
+const rejectOfferUseCase = new RejectOfferUseCase(offerRepository, listingRepository, notificationRepository);
+const counterOfferUseCase = new CounterOfferUseCase(offerRepository, listingRepository, notificationRepository);
 
 const offerController = new OfferController(
   createOfferUseCase,

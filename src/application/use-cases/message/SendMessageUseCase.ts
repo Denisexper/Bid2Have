@@ -1,9 +1,11 @@
 import { Message } from '../../../domain/entities/Message';
 import { ChatRepository } from '../../../domain/repositories/ChatRepository';
 import { MessageRepository } from '../../../domain/repositories/MessageRepository';
+import { NotificationRepository } from '../../../domain/repositories/NotificationRepository';
 import { ChatNotFoundError } from '../../../domain/errors/chat/ChatNotFoundError';
 import { ForbiddenChatActionError } from '../../../domain/errors/chat/ForbiddenChatActionError';
 import { InvalidMessageContentError } from '../../../domain/errors/chat/InvalidMessageContentError';
+import { NotificationType } from '../../../generated/prisma/enums';
 
 export interface SendMessageRequest {
   chatId: string;
@@ -15,6 +17,7 @@ export class SendMessageUseCase {
   constructor(
     private readonly chatRepository: ChatRepository,
     private readonly messageRepository: MessageRepository,
+    private readonly notificationRepository: NotificationRepository,
   ) {}
 
   async execute(request: SendMessageRequest): Promise<Message> {
@@ -32,10 +35,19 @@ export class SendMessageUseCase {
       throw new InvalidMessageContentError();
     }
 
-    return this.messageRepository.create({
+    const message = await this.messageRepository.create({
       chatId: request.chatId,
       senderId: request.senderId,
       content,
     });
+
+    const recipientId = chat.buyerId === request.senderId ? chat.sellerId : chat.buyerId;
+    await this.notificationRepository.create({
+      userId: recipientId,
+      type: NotificationType.NEW_MESSAGE,
+      payload: { chatId: message.chatId, messageId: message.id, senderId: message.senderId },
+    });
+
+    return message;
   }
 }

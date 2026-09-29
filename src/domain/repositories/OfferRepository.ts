@@ -15,5 +15,5 @@ export interface OfferRepository {
   findHighestPendingAmountByListingId(listingId: string): Promise<number | null>;
   findHighestPendingOfferByListingId(listingId: string): Promise<Offer | null>;
   updateStatus(id: string, status: OfferStatus): Promise<Offer | null>;
-  rejectPendingExcept(listingId: string, exceptOfferId: string): Promise<void>;
+  rejectPendingExcept(listingId: string, exceptOfferId: string): Promise<Offer[]>;
 }
