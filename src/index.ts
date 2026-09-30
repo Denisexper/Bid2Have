@@ -10,6 +10,7 @@ import { offerRatingRoutes, userRatingRoutes } from './infrastructure/http/route
 import { reportRoutes } from './infrastructure/http/routes/report.routes';
 import { notificationRoutes } from './infrastructure/http/routes/notification.routes';
 import { userFollowRoutes } from './infrastructure/http/routes/follow.routes';
+import { userAdminRoutes } from './infrastructure/http/routes/user.routes';
 import { prisma } from './infrastructure/database/prisma-client';
 import { PrismaUserRepository } from './infrastructure/database/repositories/PrismaUserRepository';
 import { PrismaChatRepository } from './infrastructure/database/repositories/PrismaChatRepository';
@@ -39,6 +40,7 @@ app.use('/offers', offerRoutes);
 app.use('/offers', offerRatingRoutes);
 app.use('/users', userRatingRoutes);
 app.use('/users', userFollowRoutes);
+app.use('/users', userAdminRoutes);
 app.use('/chats', chatRoutes);
 app.use('/reports', reportRoutes);
 app.use('/notifications', notificationRoutes);
