@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import http from 'http';
 import { env } from './infrastructure/config/env';
 import { authRoutes } from './infrastructure/http/routes/auth.routes';
@@ -26,6 +27,7 @@ import { scheduleAuctionCloseJob } from './infrastructure/scheduler/auctionClose
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
