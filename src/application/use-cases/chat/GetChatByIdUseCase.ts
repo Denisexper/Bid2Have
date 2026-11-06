@@ -1,14 +1,18 @@
-import { Chat } from '../../../domain/entities/Chat';
 import { ChatRepository } from '../../../domain/repositories/ChatRepository';
+import { UserRepository } from '../../../domain/repositories/UserRepository';
 import { ChatNotFoundError } from '../../../domain/errors/chat/ChatNotFoundError';
 import { ForbiddenChatActionError } from '../../../domain/errors/chat/ForbiddenChatActionError';
 import { ActingUser } from '../../shared/ActingUser';
 import { UserRole } from '../../../generated/prisma/enums';
+import { ChatWithParticipants, toChatParticipant } from '../../dtos/ChatWithParticipants';
 
 export class GetChatByIdUseCase {
-  constructor(private readonly chatRepository: ChatRepository) {}
+  constructor(
+    private readonly chatRepository: ChatRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
 
-  async execute(id: string, actingUser: ActingUser): Promise<Chat> {
+  async execute(id: string, actingUser: ActingUser): Promise<ChatWithParticipants> {
     const chat = await this.chatRepository.findById(id);
     if (!chat) {
       throw new ChatNotFoundError(id);
@@ -22,6 +26,12 @@ export class GetChatByIdUseCase {
       throw new ForbiddenChatActionError();
     }
 
-    return chat;
+    const [buyer, seller] = await Promise.all([
+      this.userRepository.findById(chat.buyerId),
+      this.userRepository.findById(chat.sellerId),
+    ]);
+
+    // buyerId/sellerId are foreign keys to users, so both lookups are guaranteed to resolve.
+    return { ...chat, buyer: toChatParticipant(buyer!), seller: toChatParticipant(seller!) };
   }
 }

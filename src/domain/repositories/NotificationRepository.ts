@@ -12,4 +12,5 @@ export interface NotificationRepository {
   findById(id: string): Promise<Notification | null>;
   findByUserId(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markAsRead(id: string): Promise<Notification | null>;
+  deleteAllByUserId(userId: string): Promise<void>;
 }

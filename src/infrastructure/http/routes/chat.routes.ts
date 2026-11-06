@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../../database/prisma-client';
 import { PrismaChatRepository } from '../../database/repositories/PrismaChatRepository';
 import { PrismaMessageRepository } from '../../database/repositories/PrismaMessageRepository';
+import { PrismaUserRepository } from '../../database/repositories/PrismaUserRepository';
 import { ListChatsForUserUseCase } from '../../../application/use-cases/chat/ListChatsForUserUseCase';
 import { GetChatByIdUseCase } from '../../../application/use-cases/chat/GetChatByIdUseCase';
 import { ListMessagesForChatUseCase } from '../../../application/use-cases/message/ListMessagesForChatUseCase';
@@ -10,8 +11,9 @@ import { authenticate } from '../middlewares/authMiddleware';
 
 const chatRepository = new PrismaChatRepository(prisma);
 const messageRepository = new PrismaMessageRepository(prisma);
+const userRepository = new PrismaUserRepository(prisma);
 const listChatsForUserUseCase = new ListChatsForUserUseCase(chatRepository);
-const getChatByIdUseCase = new GetChatByIdUseCase(chatRepository);
+const getChatByIdUseCase = new GetChatByIdUseCase(chatRepository, userRepository);
 const listMessagesForChatUseCase = new ListMessagesForChatUseCase(chatRepository, messageRepository);
 
 const chatController = new ChatController(

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ListNotificationsForUserUseCase } from '../../../../application/use-cases/notification/ListNotificationsForUserUseCase';
 import { MarkNotificationAsReadUseCase } from '../../../../application/use-cases/notification/MarkNotificationAsReadUseCase';
+import { ClearNotificationsUseCase } from '../../../../application/use-cases/notification/ClearNotificationsUseCase';
 import { NotificationNotFoundError } from '../../../../domain/errors/notification/NotificationNotFoundError';
 import { ForbiddenNotificationActionError } from '../../../../domain/errors/notification/ForbiddenNotificationActionError';
 
@@ -8,6 +9,7 @@ export class NotificationController {
   constructor(
     private readonly listNotificationsForUserUseCase: ListNotificationsForUserUseCase,
     private readonly markNotificationAsReadUseCase: MarkNotificationAsReadUseCase,
+    private readonly clearNotificationsUseCase: ClearNotificationsUseCase,
   ) {}
 
   list = async (req: Request, res: Response): Promise<void> => {
@@ -33,5 +35,10 @@ export class NotificationController {
       }
       throw error;
     }
+  };
+
+  clearAll = async (req: Request, res: Response): Promise<void> => {
+    await this.clearNotificationsUseCase.execute(req.user!.id);
+    res.status(204).send();
   };
 }

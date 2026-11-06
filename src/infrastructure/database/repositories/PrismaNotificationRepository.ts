@@ -41,4 +41,8 @@ export class PrismaNotificationRepository implements NotificationRepository {
       .catch(() => null);
     return notification ? toDomain(notification) : null;
   }
+
+  async deleteAllByUserId(userId: string): Promise<void> {
+    await this.prisma.notification.deleteMany({ where: { userId } });
+  }
 }

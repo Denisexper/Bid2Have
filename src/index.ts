@@ -55,7 +55,7 @@ const messageRepository = new PrismaMessageRepository(prisma);
 const listingRepository = new PrismaListingRepository(prisma);
 const offerRepository = new PrismaOfferRepository(prisma);
 const notificationRepository = new PrismaNotificationRepository(prisma);
-const getChatByIdUseCase = new GetChatByIdUseCase(chatRepository);
+const getChatByIdUseCase = new GetChatByIdUseCase(chatRepository, userRepository);
 const sendMessageUseCase = new SendMessageUseCase(chatRepository, messageRepository, notificationRepository);
 const closeExpiredAuctionsUseCase = new CloseExpiredAuctionsUseCase(
   listingRepository,
