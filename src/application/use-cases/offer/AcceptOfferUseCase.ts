@@ -28,7 +28,11 @@ export class AcceptOfferUseCase {
       throw new OfferNotFoundError(id);
     }
 
-    if (actingUser.role !== UserRole.SUPERADMIN && listing.sellerId !== actingUser.id) {
+    const isSeller = listing.sellerId === actingUser.id;
+    const isBuyer = offer.buyerId === actingUser.id;
+    const isResponder = offer.proposedBySeller ? isBuyer : isSeller;
+
+    if (actingUser.role !== UserRole.SUPERADMIN && !isResponder) {
       throw new ForbiddenOfferActionError();
     }
 
@@ -52,7 +56,7 @@ export class AcceptOfferUseCase {
     });
 
     await this.notificationRepository.create({
-      userId: accepted.buyerId,
+      userId: offer.proposedBySeller ? listing.sellerId : accepted.buyerId,
       type: NotificationType.OFFER_ACCEPTED,
       payload: { listingId: accepted.listingId, offerId: accepted.id, amount: accepted.amount },
     });

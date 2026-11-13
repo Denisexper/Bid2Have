@@ -30,6 +30,11 @@ export class PrismaOfferRepository implements OfferRepository {
     return offers.map(toDomain);
   }
 
+  async findByParentOfferId(parentOfferId: string): Promise<Offer | null> {
+    const offer = await this.prisma.offer.findFirst({ where: { parentOfferId } });
+    return offer ? toDomain(offer) : null;
+  }
+
   async findHighestPendingAmountByListingId(listingId: string): Promise<number | null> {
     const result = await this.prisma.offer.aggregate({
       where: { listingId, status: OfferStatus.PENDING },

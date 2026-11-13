@@ -31,7 +31,11 @@ export class CounterOfferUseCase {
       throw new OfferNotFoundError(id);
     }
 
-    if (actingUser.role !== UserRole.SUPERADMIN && listing.sellerId !== actingUser.id) {
+    const isSeller = listing.sellerId === actingUser.id;
+    const isBuyer = offer.buyerId === actingUser.id;
+    const isResponder = offer.proposedBySeller ? isBuyer : isSeller;
+
+    if (actingUser.role !== UserRole.SUPERADMIN && !isResponder) {
       throw new ForbiddenOfferActionError();
     }
 
@@ -41,15 +45,17 @@ export class CounterOfferUseCase {
 
     await this.offerRepository.updateStatus(id, OfferStatus.COUNTERED);
 
+    const proposedBySeller = !offer.proposedBySeller;
     const counterOffer = await this.offerRepository.create({
       listingId: offer.listingId,
       buyerId: offer.buyerId,
       amount,
+      proposedBySeller,
       parentOfferId: offer.id,
     });
 
     await this.notificationRepository.create({
-      userId: offer.buyerId,
+      userId: proposedBySeller ? offer.buyerId : listing.sellerId,
       type: NotificationType.OFFER_COUNTERED,
       payload: { listingId: offer.listingId, offerId: counterOffer.id, parentOfferId: offer.id, amount },
     });

@@ -5,6 +5,7 @@ export interface CreateOfferInput {
   listingId: string;
   buyerId: string;
   amount: number;
+  proposedBySeller?: boolean;
   parentOfferId?: string | null;
 }
 
@@ -12,6 +13,7 @@ export interface OfferRepository {
   create(input: CreateOfferInput): Promise<Offer>;
   findById(id: string): Promise<Offer | null>;
   findByListingId(listingId: string): Promise<Offer[]>;
+  findByParentOfferId(parentOfferId: string): Promise<Offer | null>;
   findHighestPendingAmountByListingId(listingId: string): Promise<number | null>;
   findHighestPendingOfferByListingId(listingId: string): Promise<Offer | null>;
   updateStatus(id: string, status: OfferStatus): Promise<Offer | null>;

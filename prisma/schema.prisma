@@ -143,6 +143,7 @@ model Offer {
   buyer         User        @relation(fields: [buyerId], references: [id])
   amount        Decimal     @db.Decimal(10, 2)
   status        OfferStatus @default(PENDING)
+  proposedBySeller Boolean  @default(false)
   parentOfferId String?
   parentOffer   Offer?      @relation("OfferCounter", fields: [parentOfferId], references: [id])
   counterOffers Offer[]     @relation("OfferCounter")

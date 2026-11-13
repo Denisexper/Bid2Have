@@ -6,6 +6,7 @@ export interface Offer {
   buyerId: string;
   amount: number;
   status: OfferStatus;
+  proposedBySeller: boolean;
   parentOfferId: string | null;
   createdAt: Date;
   updatedAt: Date;

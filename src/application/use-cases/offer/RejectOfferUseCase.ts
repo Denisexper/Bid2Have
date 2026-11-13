@@ -26,7 +26,11 @@ export class RejectOfferUseCase {
       throw new OfferNotFoundError(id);
     }
 
-    if (actingUser.role !== UserRole.SUPERADMIN && listing.sellerId !== actingUser.id) {
+    const isSeller = listing.sellerId === actingUser.id;
+    const isBuyer = offer.buyerId === actingUser.id;
+    const isResponder = offer.proposedBySeller ? isBuyer : isSeller;
+
+    if (actingUser.role !== UserRole.SUPERADMIN && !isResponder) {
       throw new ForbiddenOfferActionError();
     }
 
@@ -40,7 +44,7 @@ export class RejectOfferUseCase {
     }
 
     await this.notificationRepository.create({
-      userId: rejected.buyerId,
+      userId: offer.proposedBySeller ? listing.sellerId : rejected.buyerId,
       type: NotificationType.OFFER_REJECTED,
       payload: { listingId: rejected.listingId, offerId: rejected.id, amount: rejected.amount },
     });
